@@ -3,7 +3,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { toast } from "react-toastify";
 import * as yup from "yup"
 
-import  api  from "../../services/api";
+import api  from "../../services/api";
 
 import {
     Container,
@@ -19,12 +19,14 @@ import { Button } from "../../components/Button";
 
 
 
-export function Login() {
+export function Register() {
 
     const schema = yup
         .object({
+            name: yup.string().required("Nome é obrigatório"),
             email: yup.string().email("Digite email@algumacoisa.com").required("Digite um email"),
             password: yup.string().min(6,"No minimo 6 caracteres").required("Digite uma senha"),
+            confirmPassword: yup.string().oneOf([yup.ref("password")], "As senhas devem ser iguais!").required("Confirme sua senha"),
         })
         .required()
 
@@ -37,20 +39,32 @@ export function Login() {
     })
     
     const onSubmit = async (data) => {
-       const response = await toast.promise( 
-        api.post('/session', {
+       
+       try {
+        const {status} = await 
+        api.post('/users', {
+            name: data.name,
             email: data.email,
             password: data.password,
-        }),
+
+        },
         {
-            pending: 'Verificando os Dados',
-            success: 'Seja Bemvindo 👌',
-            error: 'Email ou senha invalido 🤯'
+            validateStatus : () => true,        
         },
     );
-        console.log(response);
-    };
 
+    if (status === 200 || status === 201) {
+        toast.success('Conta criada com sucesso!')
+    }else if (status === 409){
+        toast.error('Email já cadastrado! Faça login para continuar.');
+        
+    }else{
+        throw new Error();
+    }
+        } catch (error) {
+        toast.error('Falha no sistema! Tente Novamente')
+    }
+};   
 
     return (
         <Container>
@@ -62,11 +76,15 @@ export function Login() {
 
             <RightContainer>
                 <Title>
-                    Olá, seja bem vindo ao <span>Dev Burguer!</span>
-                    <br />
-                    Acesse com seu <span> Login e senha.</span>
+                   Criar Conta
                 </Title>
                 <Form onSubmit={handleSubmit(onSubmit)}>
+                <InputContainer>
+                        <label>Name </label>
+                        <input type="text" {...register("name")} />
+                        <p>{errors?.name?.message}</p>
+                    </InputContainer>
+
                     <InputContainer>
                         <label>Email </label>
                         <input type="email" {...register("email")} />
@@ -79,9 +97,15 @@ export function Login() {
                         <p>{errors?.password?.message}</p>
                     </InputContainer>
 
-                    <Button type="submit" > Entrar </Button>
+                    <InputContainer>
+                        <label>Confirmar Senha </label>
+                        <input type="password" {...register("confirmPassword")} />
+                        <p>{errors?.confirmPassword?.message}</p>
+                    </InputContainer>
 
-                    <p>Não possui conta? <a>Clique aqui.</a></p>
+                    <Button type="submit" > Criar Conta </Button>
+
+                    <p>Já possui conta? <a>Clique aqui.</a></p>
 
 
                 </Form>
@@ -89,4 +113,5 @@ export function Login() {
             </RightContainer>
         </Container>
     );
+    
 }
