@@ -41,8 +41,8 @@ export function Register() {
     const onSubmit = async (data) => {
        
        try {
-        const {status} = await 
-        api.post('/users', {
+        const { status } = await 
+        api.post ('/users', {
             name: data.name,
             email: data.email,
             password: data.password,
@@ -78,7 +78,7 @@ export function Register() {
                 <Title>
                    Criar Conta
                 </Title>
-                <Form onSubmit={handleSubmit(onSubmit)}>
+                <Form onSubmit = {handleSubmit(onSubmit)}>
                 <InputContainer>
                         <label>Name </label>
                         <input type="text" {...register("name")} />
